@@ -233,4 +233,41 @@ public class QuerydslBasicTest {
 * `where()`에 파라미터로 검색조건을 추가하면 `AND`조건이 추가됨
 * 이 경우 `null`값은 무시 -> 메서드 추출을 활용해서 동적 쿼리를 깔끔하게 만들 수 있음
 
+### 3-4. 결과 조회
+
+* `fetch()`: 리스트 조회, 데이터 없으면 빈 리스트 반환
+* `fetchOne()`: 단 건 조회
+    * 결과가 없으면 :`null`
+    * 결과가 둘 이상이면 :`com.querydsl.core.NonUniqueResultException`
+* `fetchFirst()`: `limit(1).fetchOne()`
+* `fetchResults()`: 페이징 정보 포함, total count 쿼리 추가 실행
+* `fetchCount()`: count 쿼리로 변경해서 count 수 조회
+
+```
+//List
+List<Member> fetch = queryFactory
+          .selectFrom(member)
+          .fetch();
+          
+//단 건
+Member findMember1 = queryFactory
+          .selectFrom(member)
+          .fetchOne();
+          
+//처음 한 건 조회
+Member findMember2 = queryFactory
+          .selectFrom(member)
+          .fetchFirst();
+          
+//페이징에서 사용
+QueryResults<Member> results = queryFactory
+          .selectFrom(member)
+          .fetchResults();
+          
+//count 쿼리로 변경
+long count = queryFactory
+          .selectFrom(member)
+          .fetchCount();
+```
+
 ## Note
