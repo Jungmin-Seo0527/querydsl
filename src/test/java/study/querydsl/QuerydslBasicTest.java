@@ -80,4 +80,23 @@ public class QuerydslBasicTest {
                 .fetchOne();
         assertThat(findMember.getUsername()).isEqualTo("member1");
     }
+
+    @Test
+    @DisplayName("검색 조건 querydsl")
+    public void search() {
+        Member findMember = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1")
+                        .and(member.age.eq(10)))
+                .fetchOne();
+
+        Member findMemberWithoutAnd = queryFactory
+                .selectFrom(member)
+                .where(member.username.eq("member1"),
+                        member.age.eq(10))
+                .fetchOne();
+
+        assertThat(findMember.getUsername()).isEqualTo("member1");
+        assertThat(findMember).isEqualTo(findMemberWithoutAnd);
+    }
 }
