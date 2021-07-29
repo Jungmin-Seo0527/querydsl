@@ -2,6 +2,8 @@ package study.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -426,6 +428,59 @@ public class QuerydslBasicTest {
 
         result.stream()
                 .map(o -> "tuple = " + o)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("조건문 - 간단한 조건")
+    public void basicCase() {
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        result.stream()
+                .map(s -> "s = " + s)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("조건문 - 복잡한 조건")
+    public void complexCase() {
+        List<String> result = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0~20살")
+                        .when(member.age.between(21, 30)).then("21~30")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        result.stream()
+                .map(s -> "s = " + s)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("조건문 - 복잡한 조건2: orderBy 에서 사용하기")
+    public void complexCaseInOrderBy() {
+        NumberExpression<Integer> rankPath = new CaseBuilder()
+                .when(member.age.between(0, 20)).then(2)
+                .when(member.age.between(21, 30)).then(1)
+                .otherwise(3);
+
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age, rankPath)
+                .from(member)
+                .orderBy(rankPath.desc())
+                .fetch();
+
+        result.stream()
+                .map(tuple -> "username = " + tuple.get(member.username) +
+                        " age = " + tuple.get(member.age) +
+                        " rank = " + tuple.get(rankPath))
                 .forEach(System.out::println);
     }
 }

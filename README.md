@@ -751,4 +751,92 @@ Querydsl도 하이버네이트 구현체를 사용하면 select 절의 서브쿼
     2. 애플리케이션에서 쿼리를 2번 분리해서 실행한다.
     3. nativeSQL을 사용한다.
 
+### 3-12. Case 문
+
+select, 조건절(where), order by에서 사용 가능
+
+#### 단순한 조건
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("조건문 - 간단한 조건")
+    public void basicCase() {
+        List<String> result = queryFactory
+                .select(member.age
+                        .when(10).then("열살")
+                        .when(20).then("스무살")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        result.stream()
+                .map(s -> "s = " + s)
+                .forEach(System.out::println);
+    }
+
+}
+```
+
+#### 복잡한 조건
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("조건문 - 복잡한 조건")
+    public void complexCase() {
+        List<String> result = queryFactory
+                .select(new CaseBuilder()
+                        .when(member.age.between(0, 20)).then("0~20살")
+                        .when(member.age.between(21, 30)).then("21~30")
+                        .otherwise("기타"))
+                .from(member)
+                .fetch();
+
+        result.stream()
+                .map(s -> "s = " + s)
+                .forEach(System.out::println);
+    }
+
+}
+```
+
+#### orderBy에서 Case 문 함께 사용하기
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("조건문 - 복잡한 조건2: orderBy 에서 사용하기")
+    public void complexCaseInOrderBy() {
+        NumberExpression<Integer> rankPath = new CaseBuilder()
+                .when(member.age.between(0, 20)).then(2)
+                .when(member.age.between(21, 30)).then(1)
+                .otherwise(3);
+
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age, rankPath)
+                .from(member)
+                .orderBy(rankPath.desc())
+                .fetch();
+
+        result.stream()
+                .map(tuple -> "username = " + tuple.get(member.username) +
+                        " age = " + tuple.get(member.age) +
+                        " rank = " + tuple.get(rankPath))
+                .forEach(System.out::println);
+    }
+
+}
+```
+
+Querydsl은 자바 코드로 작성하기 때문에 `rankPath`처럼 복잡한 조건을 변수로 선언해서 `select`절, `orderBy`절에서 함께 사용할 수 있다.
+
+```
+결과
+username = member4 age = 40 rank = 3
+username = member1 age = 10 rank = 2
+username = member2 age = 20 rank = 2
+username = member3 age = 30 rank = 1
+```
+
 ## Note
