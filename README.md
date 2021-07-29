@@ -839,4 +839,55 @@ username = member2 age = 20 rank = 2
 username = member3 age = 30 rank = 1
 ```
 
+### 3-13. 상수, 문자 더하기
+
+상수가 필요하면 `Expressions.constant(xxx)`사용
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("상수")
+    public void constant() {
+        List<Tuple> result = queryFactory
+                .select(member.username, Expressions.constant("A"))
+                .from(member)
+                .fetch();
+
+        result.stream()
+                .map(t -> "tuple = " + t)
+                .forEach(System.out::println);
+    }
+
+}
+```
+
+> 참고: 위와 같이 최적화가 가능하면 SQL에 constant값을 넘기지 않는다. 상수를 더하는 것 처럼 최적화가 어려우면 SQL에 constant값을 넘긴다.
+
+#### 문자 더하기 concat
+
+```java
+public class QueryBasicTest {
+    @Test
+    @DisplayName("문자열 더하기")
+    public void concat() {
+
+        // {username}_{age}
+        List<String> result = queryFactory
+                .select(member.username.concat("_").concat(member.age.stringValue()))
+                .from(member)
+                .where(member.username.eq("member1"))
+                .fetch();
+
+        result.stream()
+                .map(s -> "s = " + s)
+                .forEach(System.out::println);
+    }
+}
+```
+
+* 결과: member1_10
+
+> 참고: `member.age.stringValue()`부분이 중요한데, 문자가 아닌 다른 타입들은 `stringValue()`로 문자로 변환할 수 있다.   
+> 이 방법은 ENUM을 처리할 때도 자주 사용한다.
+
 ## Note
