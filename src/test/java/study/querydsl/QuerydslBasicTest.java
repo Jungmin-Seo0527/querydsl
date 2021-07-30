@@ -2,15 +2,20 @@ package study.querydsl;
 
 import com.querydsl.core.QueryResults;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
 import study.querydsl.entity.Team;
@@ -538,5 +543,97 @@ public class QuerydslBasicTest {
             System.out.println("username = " + tuple.get(member.username));
             System.out.println("age = " + tuple.get(member.age));
         });
+    }
+
+    @Test
+    @DisplayName("JPQL을 이용해서 DTO로 조회하기 (new)")
+    public void findDtoByJPQL() {
+        List<MemberDto> result = em.createQuery("select new study.querydsl.dto.MemberDto(m.username, m.age)" +
+                        " from Member m", MemberDto.class)
+                .getResultList();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("querydsl을 이용해서 DTO로 조회하기 - setter")
+    public void findDtoBySetter() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.bean(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("querydsl을 이용해서 DTO로 조회하기 - field")
+    public void findDtoByField() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.fields(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("querydsl을 이용해서 DTO로 조회하기 - constructor")
+    public void findDtoByConstructor() {
+        List<MemberDto> result = queryFactory
+                .select(Projections.constructor(MemberDto.class,
+                        member.username,
+                        member.age))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("querydsl을 이용해서 DTO로 조회하기(필드명이 다를때) - field")
+    public void findUserDtoByConstructor() {
+        List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class,
+                        member.username.as("name"),
+                        member.age))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("querydsl을 이용해서 DTO로 조회하기(필드명이 다를때) - field")
+    public void findUserDtoByConstructor2() {
+        List<UserDto> result = queryFactory
+                .select(Projections.constructor(UserDto.class,
+                        member.username.as("name"),
+                        member.age))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("querydsl을 이용해서 DTO로 조회하기 (subquery)")
+    public void findUserDtoByConstructor3() {
+        QMember memberSub = new QMember("memberSub");
+        List<UserDto> result = queryFactory
+                .select(Projections.fields(UserDto.class,
+                        member.username.as("name"),
+                        ExpressionUtils.as(JPAExpressions
+                                .select(memberSub.age.max())
+                                .from(memberSub), "age")
+                ))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
     }
 }
