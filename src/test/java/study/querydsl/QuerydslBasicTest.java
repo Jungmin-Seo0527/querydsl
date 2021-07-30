@@ -513,4 +513,30 @@ public class QuerydslBasicTest {
                 .map(s -> "s = " + s)
                 .forEach(System.out::println);
     }
+
+    @Test
+    @DisplayName("프로젝션 한개")
+    public void simpleProjection() {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+                .fetch();
+        result.stream()
+                .map(s -> "s = " + s)
+                .forEach(System.out::println);
+    }
+
+    @Test
+    @DisplayName("튜블로 조회")
+    public void tupleProjection() {
+        List<Tuple> result = queryFactory
+                .select(member.username, member.age)
+                .from(member)
+                .fetch();
+
+        result.forEach(tuple -> {
+            System.out.println("username = " + tuple.get(member.username));
+            System.out.println("age = " + tuple.get(member.age));
+        });
+    }
 }
