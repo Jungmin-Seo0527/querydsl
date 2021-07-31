@@ -352,4 +352,65 @@ privagte BooleanExpression allEq(String usernameCond, Integer ageCond) {
 
 * `null`체크는 주의해서 처리해야 함
 
+### 4-6. 수정, 삭제 벌크 연산
+
+#### 쿼리 한번으로 대량 데이터 수정
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("벌크 연산")
+    public void bulkUpdate() {
+        long count = queryFactory
+                .update(member)
+                .set(member.username, "비회원")
+                .where(member.age.lt(28))
+                .execute();
+
+        em.flush();
+        em.clear();
+
+        List<Member> result = queryFactory
+                .selectFrom(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("member1 = " + o));
+    }
+}
+```
+
+#### 기존 숫자에 1 더하기
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("벌크 연산 - 더하기")
+    public void bulkAdd() {
+        long count = queryFactory
+                .update(member)
+                .set(member.age, member.age.add(1))
+                .execute();
+    }
+}
+```
+
+* 곱하기: `multiply(x)`
+
+#### 쿼리 한번으로 대량 데이터 삭제
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("벌크 삭제")
+    public void bulkDelete() {
+        long count = queryFactory
+                .delete(member)
+                .where(member.age.gt(18))
+                .execute();
+    }
+}
+```
+
+> 주의: JPQL 배치와 마찬가지로, 영속성 컨텍스트에 있는 엔티티를 무시하고 실행되기 때문에 배치 쿼리를 실행하고 나면 영속성 컨텍스트를 초기화 하는 것이 안전하다.
+
 ## Note
