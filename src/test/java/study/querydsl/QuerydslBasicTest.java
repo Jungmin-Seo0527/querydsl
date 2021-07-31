@@ -742,4 +742,31 @@ public class QuerydslBasicTest {
                 .where(member.age.gt(18))
                 .execute();
     }
+
+    @Test
+    @DisplayName("SQL function 호출하기 - replace")
+    public void sqlFunction() {
+        List<String> result = queryFactory
+                .select(
+                        Expressions.stringTemplate(
+                                "function('replace', {0}, {1}, {2})",
+                                member.username, "member", "M")
+                ).from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("s = " + o));
+    }
+
+    @Test
+    @DisplayName("SQL function 호출하기(querydsl 내장 함수) - 소문자로 출력")
+    public void sqlFunction2() {
+        List<String> result = queryFactory
+                .select(member.username)
+                .from(member)
+//                .where(member.username.eq(Expressions.stringTemplate("function('lower', {0})", member.username)))
+                .where(member.username.eq(member.username.lower()))
+                .fetch();
+
+        result.forEach(o -> System.out.println("s = " + o));
+    }
 }
