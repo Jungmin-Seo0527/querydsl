@@ -308,4 +308,48 @@ public class QuerydslBasicTest {
 }
 ```
 
+### 4-5. 동적 쿼리 - Where 다중 파라미터 사용
+
+```java
+public class QuerydslBasicTest {
+    @Test
+    @DisplayName("동적 쿼리 - where 다중 파라미터")
+    public void dynamicQuery_WhereParam() {
+        String usernameParam = "member1";
+        Integer ageParam = null;
+
+        List<Member> result = searchMember2(usernameParam, ageParam);
+        assertThat(result.size()).isEqualTo(1);
+    }
+
+    private List<Member> searchMember2(String usernameCond, Integer ageCond) {
+        return queryFactory
+                .selectFrom(member)
+                .where(usernameEq(usernameCond), ageEq(ageCond))
+                .fetch();
+    }
+
+    private BooleanExpression usernameEq(String usernameCond) {
+        return usernameCond == null ? null : member.username.eq(usernameCond);
+    }
+
+    private BooleanExpression ageEq(Integer ageCond) {
+        return ageCond == null ? null : member.age.eq(ageCond);
+    }
+}
+```
+
+* `where`조건에 `null`값은 무시된다.
+* 메서드를 다른 쿼리에서도 재활용 할 수 있다.
+* 쿼리 자체의 가독성이 높아진다.
+
+#### 조합 가능
+
+````
+privagte BooleanExpression allEq(String usernameCond, Integer ageCond) {
+    return usernameEq(usernameCond).and(ageEq(ageCond));
+````
+
+* `null`체크는 주의해서 처리해야 함
+
 ## Note
