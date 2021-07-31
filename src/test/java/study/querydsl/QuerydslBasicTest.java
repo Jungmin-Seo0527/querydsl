@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import study.querydsl.dto.MemberDto;
+import study.querydsl.dto.QMemberDto;
 import study.querydsl.dto.UserDto;
 import study.querydsl.entity.Member;
 import study.querydsl.entity.QMember;
@@ -631,6 +632,17 @@ public class QuerydslBasicTest {
                                 .select(memberSub.age.max())
                                 .from(memberSub), "age")
                 ))
+                .from(member)
+                .fetch();
+
+        result.forEach(o -> System.out.println("memberDto = " + o));
+    }
+
+    @Test
+    @DisplayName("프로젝션과 결과 반환 - @QueryProjection")
+    public void findDtoByQueryProjection() {
+        List<MemberDto> result = queryFactory
+                .select(new QMemberDto(member.username, member.age))
                 .from(member)
                 .fetch();
 
