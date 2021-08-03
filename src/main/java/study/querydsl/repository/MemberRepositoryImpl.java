@@ -44,7 +44,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
                         ageGoe(condition.getAgeGoe()),
                         ageLoe(condition.getAgeLoe()))
                 .fetch();
-
     }
 
     @Override
@@ -70,7 +69,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom {
         long total = result.getTotal();
 
         return new PageImpl<>(content, pageable, total);
-
     }
 
     @Override
